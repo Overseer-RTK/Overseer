@@ -4,7 +4,7 @@ import { Router, Route, IndexRoute, browserHistory, Link } from 'react-router';
 class App extends Component {
     // test without props later
     construtor(props) {
-        
+        // super(props)
     }
 
     render() {

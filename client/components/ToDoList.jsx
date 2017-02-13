@@ -1,35 +1,36 @@
 import React, { Component } from 'react'
-import ToDoItem from './ToDoItem.jsx';
-import NewToDoItem from './NewToDoItem.jsx';
 
 class ToDoList extends Component {
     constructor(props){
         super(props);
-        this.addEvent = this.addEvent.bind(this);
-        this.state = {
-            allItems: this.props.items
-        }
+        this.onclick = this.onclick.bind(this);
     }
     
-    addEvent(toDoItem){
-        let newItems = this.state.allItems.concat(toDoItem);
-        this.props.getData(newItems);
-        this.setState({ allItems: newItems });
+    onclick(event){
+        console.log('submit running')
+        event.preventDefault();
+        let inputValue = event.target.elements.itemName.value;
+        this.props.addTask( inputValue );
+        event.target.elements.itemName.value = "";
     }
-    
+
     render() {
-        const items = this.state.allItems.map((item, idx) => {
-            return <li><ToDoItem key={idx} item={item}/></li>;
+        console.log(this.props.tasks)
+        const items = this.props.tasks.map((item, idx) => {
+            return <li>{item}</li>;
         })
 
         return(
             <div>
                 <ul>{items}</ul>
-                <NewToDoItem addEvent={this.addEvent} />
+                <form onSubmit={this.onclick}>
+                    <input name="itemName" type="text" />
+                    <button type='Submit'>Add Task</button> 
+                </form>
             </div>
         );
     }
 
 }
 
-export default ToDoList;
+export default ToDoList 
