@@ -1,32 +1,37 @@
 import React, { Component } from 'react';
+import ToDoList from './ToDoList.jsx';
 
 class Edit extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            projectData: [],
-            tasks: this.props.data
-        }
-        this.handleSubmit = this.handleSubmit.bind(this);
+        this.whenClick = this.whenClick.bind(this)
+        this.projectData = []; // insdie projectData should be array of task, each task will e an object
     }
+    // grabData(value) {
+    //     this.projectData = this.props.task.push(value);
+    // }
 
-    handleSubmit(e) {
-        // console.log(this.state.projectData);
-
-    }
-
-    grabData(array) {
-        this.setState({projectData: array});
+    whenClick(event) {
+        event.preventDefault();
+        const title = event.target.elements.itemName.value;
+        this.props.changeMenu('start',title)
     }
 
     render() {
         return (
             <div>
                 this is the create page.
-                <ToDoList getData={(array) => {this.grabData(array)
-                    }} items={[this.state.tasks]} />
-
-                <button onClick={this.handleSubmit}>Edit Project</button>
+                <ToDoList addTask={(value) => {this.props.adding(value)
+                    }} tasks={this.props.data} />
+                {/*when you lick on the add project, it return the array and go back to the previous page*/}
+                <form onSubmit={this.whenClick}>
+                    <label>
+                        Project Name:
+                        <input name="itemName" type="text" />
+                    </label>
+                
+                    <button type='Submit'>Update Project</button>
+                </form>
             </div>
         )
     }
