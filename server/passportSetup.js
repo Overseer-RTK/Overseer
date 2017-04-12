@@ -1,57 +1,45 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
-const userModel = require('./db/userModel');
+const Models = require('./models');
 
-module.exports = function(app) {
-    app.use(passport.initialize());
-    app.use(passport.session());
+module.exports = function (app) {
+  passport.serializeUser((user, done) => {
+    console.log('serializing user');
+    done(null, user.id);
+  });
 
-    passport.use(new LocalStrategy(
-        function(username, password, done) {
-            userModel.findOne({
-                where: {
-                    // fix username not in model yet. adopt attributes later
-                    'username': username
-                }
-            }).then(function(user) {
-                if(user === null) {
-                    return done(null, false, { message: 'Incorrect credentials.' })
-                }
-                // don't forget to generate salt and have salt property on user
-                const hashedPassword = bcrypt.hashSync(password, user.salt);
-                console.log('password', password);
-                console.log('salt', user.salt);
+  passport.deserializeUser((id, done) => {
+    console.log('deserialize user');
+    Models.User.findById(id)
+      .then(user => done(null, user))
+      .catch(err => done(err));
+  });
 
-                console.log('user password', user.password);
-                console.log('hashedPassword', hashedPassword);
+  passport.use(new LocalStrategy(
+    function (username, password, done) {
+      process.nextTick(() => {
+        Models.User.findOne({
+          where: {
+            username: username
+          }
+        }).then(function (user) {
+          console.log('looking for user');
+          if (!user) {
+            return done(null, false);
+          }
 
-                if(user.password === hashedPassword) {
-                    return done(null, user);
-                }
-                return done(null, false, { message: 'Incorrect credentials.' })
-            })
-        }
-    ));
+          if (!bcrypt.compareSync(password, user.password)) {
+            return done(null, false);
+          }
 
-    passport.serializeUser(function(user, done) {
-        // console.log('serializeUser: ', user._id);
-        done(null, user._id);
-    });
+          console.log('found valid user');
+          return done(null, user);
+        });
+      });
+    }
+  ));
 
-    passport.deserializeUser(function(id, done) {
-        userModel.findOne({
-            where: {
-                // we need to check this too.
-                'id': id
-            }
-        }).then(function(user) {
-            if(user === null) {
-                done(new Error('Wron user id.'))
-            }
-            done(null, user);
-        }).catch((err) => {
-            console.log('rawr');
-        })
-    })
+  app.use(passport.initialize());
+  app.use(passport.session());
 }
