@@ -1,12 +1,9 @@
-const Sequelize = require('sequelize');
+const db = require('../db/connection');
 
-const sequelize = new Sequelize('overseerUsers', 'overseer', 'password', {
-    host: 'localhost',
-    dialect: 'postgres',
-});
+const { Sequelize, sequelize } = db;
 
-const OverseerUsers = sequelize.define('user', {
-    _id: {
+const User = sequelize.define('user', {
+    id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
@@ -33,9 +30,11 @@ const OverseerUsers = sequelize.define('user', {
     },
     salt: {
         type: Sequelize.STRING
-    }
+    },
+    // role: {
+    //     type: Sequelize.STRING,
+    //     allowNull: false
+    // }
 });
 
-sequelize.sync();
-
-module.exports = OverseerUsers;
+module.exports = User;

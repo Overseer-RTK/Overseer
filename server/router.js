@@ -1,5 +1,9 @@
 const passport = require('passport');
 const userController = require('./controller/userController');
+const seed = require('./db/seed');
+const projectController = require('./controller/projectController');
+const taskController = require('./controller/taskController');
+const session = require('express-session');
 
 module.exports = function(express) {
     const router = express.Router();
@@ -10,33 +14,38 @@ module.exports = function(express) {
         else res.redirect('/');
     }
 
-    router.get('/signup', userController.show);
-
     router.post('/signup', userController.signup);
-    
+
     // fix all of these routes
-    router.post('/', passport.authenticate('local',{
-        successRedirect: '/dashboard',
-        failureRedirect: '/rawr',
-        // failureFlash: true
-    }))
+    // router.post('/', passport.authenticate('local',{
+    //     successRedirect: '/dashboard',
+    //     failureRedirect: '/rawr',
+    //     // failureFlash: true
+    // }));
 
-    // fix routes
-    router.get('/', function(req, res) {
-        // we dont have a home
-        res.render('home');
-    })
+    router.post('/', passport.authenticate('local'), (req, res) => {
+        req.session.isLoggedIn = true;
+        res.json({
+            userName: req.user.username,
+        });
+    });
+    router.get('/seed', (req, res) => {
+      seed();
+      res.send('seeded database');
+    });
 
-    router.get('/dashboard', isAuthenticated, function(req, res) {
-        // no dashboard
-        res.render('dashboard');
-    })
+    router.get('/get_projects', projectController.getProjects);
+    router.post('/add_project', projectController.addProject);
 
-    router.get('/logout', function(req, res) {
-        req.logout();
-        res.redirect('/');
-    })
-    
+    router.get('/get_tasks/:id', taskController.getTasks);
+    router.post('/add_task', taskController.addTask, projectController.updateProgress);
+
+    router.get('/get_project_info/:id', projectController.getProjectInformation);
+
+    router.patch('/patch/:taskId/:projectId', taskController.toggleCompletion, projectController.updateProgress);
+
+    router.patch('/update_project/:id', projectController.updateProject);
+
     return router;
 
 }

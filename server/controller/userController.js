@@ -1,13 +1,7 @@
-const userModel = require('../db/userModel');
+const Models = require('../models');
 const bcrypt = require('bcrypt');
 
 const userController = {};
-
-userController.show = function(req, res) {
-
-    // need a signup page
-    // res.render('signup');
-}
 
 userController.signup = function(req, res) {
     const firstName = req.body.firstName;
@@ -20,7 +14,7 @@ userController.signup = function(req, res) {
         res.status(404).end();
     } else {
         const salt = bcrypt.genSaltSync(10);
-        console.log(password, salt);
+        // console.log(password, salt);
         const hashedPassword = bcrypt.hashSync(password, salt);
         const newUser = {
             firstName,
@@ -30,13 +24,12 @@ userController.signup = function(req, res) {
             password: hashedPassword,
             salt
         }
-        userModel.create(newUser).then(function() {
-            res.status(200).send();
-        }).catch(function(error) {
-            res.status(404).send();
+        Models.User.create(newUser).then((user) => {
+            res.status(200).json(user);
+        }).catch((err) => {
+            res.status(400).json(err);
         })
     }
 }
 
 module.exports = userController;
-
